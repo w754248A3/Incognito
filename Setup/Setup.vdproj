@@ -15,7 +15,7 @@
     {
         "Entry"
         {
-        "MsmKey" = "8:_124597D403E040D1B0377926338FEB33"
+        "MsmKey" = "8:_C12CD0A65A1D41969A3D07692329D543"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -37,6 +37,14 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+            }
         }
         "Release"
         {
@@ -134,6 +142,28 @@
                 {
                 }
             }
+            "{1525181F-901A-416C-8A58-119130FE478E}:_D74717C0A55B4541A52D6311A886A491"
+            {
+            "Name" = "8:#1915"
+            "AlwaysCreate" = "11:FALSE"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Property" = "8:AppDataFolder"
+                "Folders"
+                {
+                    "{9EF0B969-E518-4E46-987F-47570745A589}:_A503B1734A9C472D934F84788D8BE3CF"
+                    {
+                    "Name" = "8:Incognito"
+                    "AlwaysCreate" = "11:FALSE"
+                    "Condition" = "8:"
+                    "Transitive" = "11:FALSE"
+                    "Property" = "8:_20E646C7FD4A4045BFC0090E4CFD626F"
+                        "Folders"
+                        {
+                        }
+                    }
+                }
+            }
             "{1525181F-901A-416C-8A58-119130FE478E}:_F7386A6D094048EA9DB4F4E24AC197E3"
             {
             "Name" = "8:#1919"
@@ -162,7 +192,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Setup"
         "ProductCode" = "8:{97833D61-91E0-4CBB-9593-8E292CF66EB3}"
-        "PackageCode" = "8:{86E73449-1FD3-4CE4-92EE-DA746E4DE4E2}"
+        "PackageCode" = "8:{E2B596C0-826E-433A-A9E2-02EF6443B0CA}"
         "UpgradeCode" = "8:{7B65D127-6DEF-4B9D-BA3C-DA97D4B2B4A4}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
@@ -282,7 +312,7 @@
         }
         "Shortcut"
         {
-            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_17515DEAC2664A02ADD6F68EA2F62934"
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_A336ADBC229147508BBCB9EF7C21DD49"
             {
             "Name" = "8:Incognito"
             "Arguments" = "8:"
@@ -290,9 +320,9 @@
             "ShowCmd" = "3:1"
             "IconIndex" = "3:0"
             "Transitive" = "11:FALSE"
-            "Target" = "8:_124597D403E040D1B0377926338FEB33"
+            "Target" = "8:_C12CD0A65A1D41969A3D07692329D543"
             "Folder" = "8:_577FCD714CDA4DAE914FCD0D036466D1"
-            "WorkingFolder" = "8:_87B6A58EB31A4CC499F3754BDDFE55F6"
+            "WorkingFolder" = "8:_A503B1734A9C472D934F84788D8BE3CF"
             "Icon" = "8:"
             "Feature" = "8:"
             }
@@ -481,41 +511,6 @@
             "Attributes" = "3:1"
                 "Dialogs"
                 {
-                    "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_3E38F707EECD4FF18208A92B24073BD3"
-                    {
-                    "Sequence" = "3:200"
-                    "DisplayName" = "8:安装文件夹"
-                    "UseDynamicProperties" = "11:TRUE"
-                    "IsDependency" = "11:FALSE"
-                    "SourcePath" = "8:<VsdDialogDir>\\VsdFolderDlg.wid"
-                        "Properties"
-                        {
-                            "BannerBitmap"
-                            {
-                            "Name" = "8:BannerBitmap"
-                            "DisplayName" = "8:#1001"
-                            "Description" = "8:#1101"
-                            "Type" = "3:8"
-                            "ContextData" = "8:Bitmap"
-                            "Attributes" = "3:4"
-                            "Setting" = "3:1"
-                            "UsePlugInResources" = "11:TRUE"
-                            }
-                            "InstallAllUsersVisible"
-                            {
-                            "Name" = "8:InstallAllUsersVisible"
-                            "DisplayName" = "8:#1059"
-                            "Description" = "8:#1159"
-                            "Type" = "3:5"
-                            "ContextData" = "8:1;True=1;False=0"
-                            "Attributes" = "3:0"
-                            "Setting" = "3:0"
-                            "Value" = "3:1"
-                            "DefaultValue" = "3:1"
-                            "UsePlugInResources" = "11:TRUE"
-                            }
-                        }
-                    }
                     "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_7E1E4F98B46A48B7813531A4D75788EC"
                     {
                     "Sequence" = "3:300"
@@ -695,12 +690,12 @@
         }
         "ProjectOutput"
         {
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_124597D403E040D1B0377926338FEB33"
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_C12CD0A65A1D41969A3D07692329D543"
             {
             "SourcePath" = "8:..\\Incognito\\obj\\Release\\net5.0\\apphost.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
-            "Folder" = "8:_87B6A58EB31A4CC499F3754BDDFE55F6"
+            "Folder" = "8:_A503B1734A9C472D934F84788D8BE3CF"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
