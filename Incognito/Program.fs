@@ -207,8 +207,7 @@ module WriteRegistry =
 
 
 
-    let Set() =
-        let rootReg = Registry.CurrentUser;
+    let Set(rootReg:RegistryKey) =
         
         
         let id = "386b1b0d89187978";
@@ -270,12 +269,63 @@ module WriteRegistry =
 
         ()
 
+
+    let rec inputExePath() =
+        Console.WriteLine("请输入浏览器的完整路径")
+        let s = Console.ReadLine()
+        if File.Exists(s) then
+            s
+        else
+           Console.WriteLine("文件不存在")
+           inputExePath()
+
+    let createInfoPath() =
+        let basePath = AppDomain.CurrentDomain.BaseDirectory;
+        
+        Path.Combine(basePath, "path")
+
+    let getExePath() =
+        File.ReadAllText(createInfoPath(), System.Text.Encoding.UTF8)
+
+    let setExePath(s) =
+        File.WriteAllText(createInfoPath(), s, System.Text.Encoding.UTF8)
+    
+    
+    let install() =
+        let path = inputExePath();
+        setExePath(path)
+        Set(Registry.CurrentUser)
+        ()
+
+
+    let openChrome url =
+        let appPath = getExePath()
+
+        let workDir = Path.GetDirectoryName(appPath)
+
+        let vs = [|"-incognito"; "--single-argument"; url|]
+
+        let args = String.Join(' ', vs)
+
+        let info = new ProcessStartInfo()
+        
+        info.Arguments <- args
+        
+        info.FileName <- appPath
+        
+        info.UseShellExecute <- false
+        
+        info.WorkingDirectory <- workDir
+        
+        Process.Start(info)
+
+   
+
     [<EntryPoint>]
     let main argv =
         if argv.Length <> 0 then
-            Array.ForEach(argv, fun item -> Console.WriteLine item)
-            Console.ReadLine() |> ignore
+            openChrome(argv.[0]) |> ignore
             0
         else       
-            Set();
+            install()
             0

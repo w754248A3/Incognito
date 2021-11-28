@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.31702.278
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Incognito", "Incognito\Incognito.fsproj", "{D7835840-E6CA-4B0B-B9FE-9124CBBE1F3D}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup", "Setup\Setup.vdproj", "{36E77F00-AF8C-43E5-B514-AB3AD16459AF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,9 @@ Global
 		{D7835840-E6CA-4B0B-B9FE-9124CBBE1F3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D7835840-E6CA-4B0B-B9FE-9124CBBE1F3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D7835840-E6CA-4B0B-B9FE-9124CBBE1F3D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36E77F00-AF8C-43E5-B514-AB3AD16459AF}.Debug|Any CPU.ActiveCfg = Debug
+		{36E77F00-AF8C-43E5-B514-AB3AD16459AF}.Release|Any CPU.ActiveCfg = Release
+		{36E77F00-AF8C-43E5-B514-AB3AD16459AF}.Release|Any CPU.Build.0 = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
