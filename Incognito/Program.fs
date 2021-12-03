@@ -1,4 +1,4 @@
-﻿namespace OpenIncognitoMode
+﻿namespace Incognito
 open System;
 open Microsoft.Win32;
 open System.Linq;
@@ -10,7 +10,33 @@ open System.Diagnostics;
 open System.IO;
 open System.Collections.Generic;
 
-module WriteRegistry = 
+
+module win32api =
+
+    type HChangeNotifyEventID =
+        | SHCNE_ASSOCCHANGED = 0x08000000
+
+    [<Flags>]
+    type HChangeNotifyFlags =
+        | SHCNF_DWORD = 0x0003
+        | SHCNF_FLUSH = 0x1000
+
+    [<DllImport(@"Kernel32.dll")>]
+    extern void FreeConsole()
+
+    [<DllImport(@"Shell32.dll")>]
+    extern void SHChangeNotify(HChangeNotifyEventID wEventId,HChangeNotifyFlags uFlags,IntPtr dwItem1,IntPtr dwItem2)
+
+    let flushOS() =
+        let b = (HChangeNotifyFlags.SHCNF_DWORD ||| HChangeNotifyFlags.SHCNF_FLUSH)
+
+        SHChangeNotify(HChangeNotifyEventID.SHCNE_ASSOCCHANGED, b, IntPtr.Zero, IntPtr.Zero);
+   
+
+
+
+
+module Incognito = 
     type RegistryTreeData =
         | Str of s:string
         | Int of n:int
@@ -24,23 +50,26 @@ module WriteRegistry =
     type RegistryTree = {
         Name :string
 
-    
-
         Value: list<RegistryKeyValue>
 
         SubTree: list<RegistryTree>
     }
 
-    let rec openToRegistry (reg:RegistryKey) list openFunc : RegistryKey =
+    let rec openToRegistry (reg:RegistryKey) list openFunc openLastFunc : RegistryKey =
 
         if List.isEmpty list then
             reg
         else
             let head = List.head list
             let tail = List.tail list
-        
-            let subReg = openFunc reg head
-            openToRegistry subReg tail openFunc
+            
+            if List.isEmpty tail then
+                openLastFunc reg head
+            else
+                let subReg = openFunc reg head
+                openToRegistry subReg tail openFunc openLastFunc
+
+            
    
     let rec createRegistry (reg: RegistryKey ) (tree:RegistryTree) =
     
@@ -81,7 +110,8 @@ module WriteRegistry =
 
 
 
-    let createOpenRegistry appPath appPathArgs appId appName pointName =
+    let createFileTypeRegistry appPath appPathArgs appId appName pointName =
+       
         let command = {Name = "command"; SubTree = list.Empty; 
     
             Value = [{Key = ""; Value = Str(appPathArgs)} ]
@@ -177,95 +207,95 @@ module WriteRegistry =
 
         {Name = appId; Value = [{Key = ""; Value = Str(appName)}]; SubTree = [capabilities; defaultIcon; InstallInfo; shell]}
 
-    let createReg (reg:RegistryKey) appId =
-        let vs = [| "Software";"Clients";"StartMenuInternet"; appId; "Capabilities"|]
+    let createAppRegistryPath appId =
+        let vs = [| "Software"; "Clients"; "StartMenuInternet"; appId; "Capabilities"|]
+        let path = String.Join('\\', vs)
 
-        reg.SetValue(appId, String.Join('\\', vs));
+        {Name = "RegisteredApplications"; SubTree = List.empty;
+            Value = [
+                {Key = appId; Value = Str(path)}
+            ]
+        }
 
-    type HChangeNotifyEventID =
-    | SHCNE_ASSOCCHANGED = 0x08000000
+    let createAppInstallRegistryPath appNameWithExe appPath basePath =
+        
+         
+        {Name = appNameWithExe; SubTree = list.Empty;
+                       
+            Value = [
+                            
+                    {Key = ""; Value = Str(appPath)}
+                    {Key = "Path"; Value = Str(basePath)}
+            ]
+        }
+        
 
-    [<Flags>]
-    type HChangeNotifyFlags =
-    | SHCNF_DWORD = 0x0003
-    | SHCNF_FLUSH = 0x1000
-
-
-    module api =
-        [<DllImport(@"Kernel32.dll")>]
-        extern void FreeConsole()
-
-        [<DllImport(@"Shell32.dll")>]
-        extern void SHChangeNotify(HChangeNotifyEventID wEventId,HChangeNotifyFlags uFlags,IntPtr dwItem1,IntPtr dwItem2)
-
-    let flushOS() =
-        let b = (HChangeNotifyFlags.SHCNF_DWORD ||| HChangeNotifyFlags.SHCNF_FLUSH)
-
-        api.SHChangeNotify(HChangeNotifyEventID.SHCNE_ASSOCCHANGED, b, IntPtr.Zero, IntPtr.Zero);
-   
-
-
-
-
-    let Set(rootReg:RegistryKey) =
+    let RegistryDefaultBrowser(rootReg:RegistryKey) =
         
         
         let id = "386b1b0d89187978";
         
         let appName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
-        
-        
+             
         let basePath = AppDomain.CurrentDomain.BaseDirectory;
-        
-        
-       
+
         let appNameWithExe = appName + ".exe"
         
         let appId = appName + "." + id 
           
-        let appPath = Path.Combine(basePath, (appName + ".exe"))
+        let appPath = Path.Combine(basePath, appNameWithExe)
         
         let appPath'' =  "\"" + appPath + "\""
         
         let appPathArgs = appPath'' + " %1"
         
         let openPointName = "HTML." + appId
+   
+        let writeOpen (reg:RegistryKey) p = reg.CreateSubKey(p)
         
-        let writeOpen (reg:RegistryKey) p = reg.OpenSubKey(p, true)
-           
-        let v = createOpenRegistry appPath appPathArgs appId appName openPointName
-        
-        let vv = createAppRegistry appPath'' appPath openPointName appId appName
-        
-        createRegistry (rootReg.OpenSubKey("SOFTWARE").OpenSubKey("Clients").OpenSubKey("StartMenuInternet", true)) vv
-        
+        let readOpen = writeOpen
 
 
-        createRegistry (rootReg.OpenSubKey("SOFTWARE").OpenSubKey("Classes", true)) v
+       
+
+        let registryOpenFileCommand () =
+            let v = createFileTypeRegistry appPath appPathArgs appId appName openPointName
+            let vs = ["SOFTWARE"; "Classes"]
+            createRegistry (openToRegistry rootReg vs readOpen writeOpen) v
         
-        let reg = rootReg.OpenSubKey("SOFTWARE").OpenSubKey("RegisteredApplications", true)
+        let registryApp() =
+            let v = createAppRegistry appPath'' appPath openPointName appId appName         
+            let vs = ["SOFTWARE"; "Clients"; "StartMenuInternet"]
+            createRegistry (openToRegistry rootReg vs readOpen writeOpen) v
+
+
+        let registryAppPath() =
+            
+            let v = createAppRegistryPath appId
+            let vs = ["SOFTWARE"]
+            
+            createRegistry (openToRegistry rootReg vs readOpen writeOpen) v
+                    
+                    
+                    
+        let registryAppInstallPath()=
+            let v = createAppInstallRegistryPath appNameWithExe appPath basePath
+            let vs = ["SOFTWARE"; "Microsoft"; "Windows"; "CurrentVersion"; "App Paths"]
+            
+            createRegistry (openToRegistry rootReg vs readOpen writeOpen) v    
+                          
         
-        createReg reg appId
         
-        let pregvs = ["SOFTWARE";"Microsoft";"Windows";"CurrentVersion";"App Paths"]
-        
-        
-        
-        
-        let preg = openToRegistry rootReg pregvs writeOpen
-        
-        let psub = {Name = appNameWithExe; SubTree = list.Empty;
-                       
-                        Value = [
-                            
-                                {Key = ""; Value = Str(appPath)}
-                                {Key = "Path"; Value = Str(basePath)}
-                        ]
-                    }
-        
-        createRegistry preg psub
-        
-        flushOS()
+        registryOpenFileCommand()
+
+        registryApp()
+
+        registryAppPath()
+
+        //registryAppInstallPath()
+         
+        win32api.flushOS()
+
 
         ()
 
@@ -294,7 +324,7 @@ module WriteRegistry =
     let install() =
         let path = inputExePath();
         setExePath(path)
-        Set(Registry.CurrentUser)
+        RegistryDefaultBrowser(Registry.CurrentUser)
         ()
 
 
