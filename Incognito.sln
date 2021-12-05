@@ -7,7 +7,7 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Incognito", "Incognito\Inco
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup", "Setup\Setup.vdproj", "{36E77F00-AF8C-43E5-B514-AB3AD16459AF}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Test", "Test\Test.fsproj", "{BE0DB07F-BC10-43E4-91A7-0FEF0FF64D95}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Test", "Test\Test.fsproj", "{BE0DB07F-BC10-43E4-91A7-0FEF0FF64D95}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,7 +21,6 @@ Global
 		{D7835840-E6CA-4B0B-B9FE-9124CBBE1F3D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{36E77F00-AF8C-43E5-B514-AB3AD16459AF}.Debug|Any CPU.ActiveCfg = Debug
 		{36E77F00-AF8C-43E5-B514-AB3AD16459AF}.Release|Any CPU.ActiveCfg = Release
-		{36E77F00-AF8C-43E5-B514-AB3AD16459AF}.Release|Any CPU.Build.0 = Release
 		{BE0DB07F-BC10-43E4-91A7-0FEF0FF64D95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{BE0DB07F-BC10-43E4-91A7-0FEF0FF64D95}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BE0DB07F-BC10-43E4-91A7-0FEF0FF64D95}.Release|Any CPU.ActiveCfg = Release|Any CPU

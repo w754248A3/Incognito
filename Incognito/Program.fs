@@ -360,7 +360,6 @@ module Incognito =
         match X509Certificate.CreateFromSignedFile(appPath).Subject with
         | a when a.StartsWith("CN=Microsoft Corporation") -> fun url -> String.Join(' ', ["-inprivate"; "--single-argument"; url])
         | a when a.StartsWith("CN=Google LLC") -> fun url -> String.Join(' ', ["-incognito"; "--single-argument"; url])
-        | a when a.StartsWith("CN=Mozilla Corporation") -> fun url -> String.Join(' ', ["-private"; "-osint"; "-url"; url])
         | a -> raise (ArgumentException("不支持该浏览器"))
 
     let rec inputExePath() =
