@@ -9,7 +9,8 @@ open System.Security.Principal;
 open System.Diagnostics;
 open System.IO;
 open System.Collections.Generic;
-
+open System.Text
+open System.Security.Cryptography.X509Certificates
 
 module win32api =
 
@@ -33,7 +34,36 @@ module win32api =
         SHChangeNotify(HChangeNotifyEventID.SHCNE_ASSOCCHANGED, b, IntPtr.Zero, IntPtr.Zero);
    
 
+    [<Flags>]
+    type AssocF =
+    |None = 0
+    
+    type AssocStr =
+    |Executable = 2
 
+    [<DllImport("Shlwapi.dll", SetLastError = true, CharSet = CharSet.Unicode)>]
+    extern uint32 AssocQueryStringW(AssocF flags, AssocStr str, string pszAssoc, string pszExtra, [<Out>] StringBuilder pszOut, uint& pcchOut);
+
+
+    let getExePath() =
+        let name = "https"
+
+        let mutable length = uint 0
+
+        let mutable ret = AssocQueryStringW(AssocF.None, AssocStr.Executable, name, null, null, &length)
+       
+        if ret <> (uint 1) then
+            raise (InvalidOperationException(""))
+
+        let sb = new StringBuilder(int length)
+
+        ret <- AssocQueryStringW(AssocF.None, AssocStr.Executable, name, null, sb, &length)
+
+
+        if ret <> (uint 0) then
+            raise (InvalidOperationException(""))
+
+        sb.ToString()
 
 
 module Incognito = 
@@ -230,30 +260,32 @@ module Incognito =
         }
         
 
+    let id = "386b1b0d89187978";
+    
+    let appName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
+         
+    let basePath = AppDomain.CurrentDomain.BaseDirectory;
+
+    let appNameWithExe = appName + ".exe"
+    
+    let appId = appName + "." + id 
+      
+    let appPath = Path.Combine(basePath, appNameWithExe)
+    
+    let appPath'' =  "\"" + appPath + "\""
+    
+    let appPathArgs = appPath'' + " %1"
+    
+    let openPointName = "HTML." + appId
+
     let RegistryDefaultBrowser(rootReg:RegistryKey) =
         
         
-        let id = "386b1b0d89187978";
         
-        let appName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
-             
-        let basePath = AppDomain.CurrentDomain.BaseDirectory;
-
-        let appNameWithExe = appName + ".exe"
-        
-        let appId = appName + "." + id 
-          
-        let appPath = Path.Combine(basePath, appNameWithExe)
-        
-        let appPath'' =  "\"" + appPath + "\""
-        
-        let appPathArgs = appPath'' + " %1"
-        
-        let openPointName = "HTML." + appId
    
-        let writeOpen (reg:RegistryKey) p = reg.CreateSubKey(p)
+        let writeOpen (reg:RegistryKey) p = reg.OpenSubKey(p, true)
         
-        let readOpen = writeOpen
+        let readOpen (reg:RegistryKey) p = reg.OpenSubKey(p, false)
 
 
        
@@ -298,45 +330,18 @@ module Incognito =
 
 
         ()
-
-
-    let rec inputExePath() =
-        Console.WriteLine("请输入浏览器的完整路径")
-        let s = Console.ReadLine()
-        if File.Exists(s) then
-            s
-        else
-           Console.WriteLine("文件不存在")
-           inputExePath()
-
-    let createInfoPath() =
-        let basePath = AppDomain.CurrentDomain.BaseDirectory;
+    
+    let isos (os:OperatingSystem) pID major minor =
+        os.Platform = pID && os.Version.Major = major && os.Version.Minor = minor
+    let iswin7() = isos Environment.OSVersion PlatformID.Win32NT 6 1
+    
+    let iswin10() = isos Environment.OSVersion PlatformID.Win32NT 10 0
+    
+    
+    let runApp appPath args =
         
-        Path.Combine(basePath, "path")
-
-    let getExePath() =
-        File.ReadAllText(createInfoPath(), System.Text.Encoding.UTF8)
-
-    let setExePath(s) =
-        File.WriteAllText(createInfoPath(), s, System.Text.Encoding.UTF8)
+        let workDic = Path.GetDirectoryName(appPath:string)
     
-    
-    let install() =
-        let path = inputExePath();
-        setExePath(path)
-        RegistryDefaultBrowser(Registry.CurrentUser)
-        ()
-
-
-    let openChrome url =
-        let appPath = getExePath()
-
-        let workDir = Path.GetDirectoryName(appPath)
-
-        let vs = [|"-incognito"; "--single-argument"; url|]
-
-        let args = String.Join(' ', vs)
-
         let info = new ProcessStartInfo()
         
         info.Arguments <- args
@@ -345,16 +350,101 @@ module Incognito =
         
         info.UseShellExecute <- false
         
-        info.WorkingDirectory <- workDir
+        info.WorkingDirectory <- workDic
         
-        Process.Start(info)
+        Process.Start(info) |> ignore
+
+        ()
+    
+    let getArgsFunc appPath =
+        match X509Certificate.CreateFromSignedFile(appPath).Subject with
+        | a when a.StartsWith("CN=Microsoft Corporation") -> fun url -> String.Join(' ', ["-inprivate"; "--single-argument"; url])
+        | a when a.StartsWith("CN=Google LLC") -> fun url -> String.Join(' ', ["-incognito"; "--single-argument"; url])
+        | a when a.StartsWith("CN=Mozilla Corporation") -> fun url -> String.Join(' ', ["-private"; "-osint"; "-url"; url])
+        | a -> raise (ArgumentException("不支持该浏览器"))
+
+    let rec inputExePath() =
+        Console.WriteLine("请输入浏览器的完整路径")
+        let s = Console.ReadLine()
+        if File.Exists(s) then
+            try
+                getArgsFunc(s) |> ignore
+                s
+            with 
+            | e -> Console.WriteLine("该浏览器不受支持") 
+                   inputExePath()         
+        else
+           Console.WriteLine("文件不存在")
+           inputExePath()
+
+
+    let getBrowserPath() =
+        let browserPath = win32api.getExePath()
+
+        if browserPath.Equals(appPath, StringComparison.OrdinalIgnoreCase) then
+            Console.WriteLine("自动获取的浏览器路径是我自己的路径,所以需要手动输入一个浏览器的路径")
+            inputExePath()
+        else
+            try
+                getArgsFunc(browserPath) |> ignore
+                browserPath
+            with
+            | e -> Console.WriteLine("自动获取的浏览器不受支持,请手动输入一个浏览器路径")
+                   inputExePath()
+            
+
+    
+    let openDefaultProgramUI() =
+        runApp @"C:\Windows\System32\control.exe" "/name Microsoft.DefaultPrograms /page pageDefaultProgram"
+  
+
+    
+    let createInfoPath() =
+        let basePath = AppDomain.CurrentDomain.BaseDirectory;
+        
+        Path.Combine(basePath, "path")
+
+    let getSaveBrowserPath() =
+        File.ReadAllText(createInfoPath(), System.Text.Encoding.UTF8)
+
+    let setSaveBrowserPath(s) =
+        File.WriteAllText(createInfoPath(), s, System.Text.Encoding.UTF8)
+    
+    
+    
+    let install() =
+        let path = getBrowserPath();
+        setSaveBrowserPath(path)
+
+        if iswin7() then
+            Console.WriteLine("当前系统为Windows 7 请确保以管理员权限运行否则请重新运行")
+            Console.WriteLine("已是管理员权限运行请按回车键继续")
+            Console.ReadLine() |> ignore
+            RegistryDefaultBrowser(Registry.LocalMachine)
+        else
+            RegistryDefaultBrowser(Registry.CurrentUser)
+
+
+        Console.WriteLine("已经注册为候选默认浏览器,请在默认程序面板中将该应用选择为默认浏览器")
+        openDefaultProgramUI()
+        Console.WriteLine("按下回车键继续")
+        Console.ReadLine() |> ignore
+        ()
+
+    
+    let openBrowser url =
+        let appPath = getSaveBrowserPath()
+
+        let args = getArgsFunc(appPath) url
+
+        runApp appPath args
 
    
 
     [<EntryPoint>]
     let main argv =
         if argv.Length <> 0 then
-            openChrome(argv.[0]) |> ignore
+            openBrowser(argv.[0]) |> ignore
             0
         else       
             install()
