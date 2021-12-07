@@ -439,11 +439,21 @@ module Incognito =
         runApp appPath args
 
    
+    let isUri(s) =
+        try
+            new Uri(s) |> ignore
+            true
+        with
+        | :? UriFormatException -> false
 
     [<EntryPoint>]
     let main argv =
         if argv.Length <> 0 then
-            openBrowser(argv.[0]) |> ignore
+            argv
+            |> Array.filter(fun p -> isUri(p))
+            |> Array.head
+            |> openBrowser
+            |> ignore
             0
         else       
             install()
