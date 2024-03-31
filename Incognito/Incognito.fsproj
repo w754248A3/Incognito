@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>NET7.0</TargetFramework>
+    <TargetFramework>NET8.0</TargetFramework>
     <SelfContained>false</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <WarnOn>3390;$(WarnOn)</WarnOn>
